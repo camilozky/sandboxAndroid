@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                         item {
                             Button(
                                 modifier = Modifier.padding(8.dp),
-                                onClick = { /*TODO*/ }) {
+                                onClick = {  }) {
                                 Text(text = "Send message")
                             }
                         }
