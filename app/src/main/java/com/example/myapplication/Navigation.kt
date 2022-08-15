@@ -14,12 +14,14 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -32,7 +34,8 @@ fun Navigation() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
         composable(route = Screen.MainScreen.route) {
-            MainScreen(navController = navController)
+//            MainScreen(navController = navController)
+            HelloScreen(navController = navController)
         }
         composable(
             route = Screen.DetailScreen.route + "/{name}",
@@ -51,10 +54,34 @@ fun Navigation() {
 
 }
 
+class HelloViewModel : ViewModel() {
+    private val _text = MutableLiveData("")
+    val text: LiveData<String> = _text
+
+    fun onValueChange(newName: String) {
+        _text.value = newName
+    }
+
+}
 
 @Composable
-fun MainScreen(navController: NavController) {
-    var text by remember { mutableStateOf("") }
+fun HelloScreen(
+    helloViewModel: HelloViewModel = viewModel(),
+    navController: NavController = rememberNavController(),
+) {
+    val text by helloViewModel.text.observeAsState("")
+    MainScreen(
+        navController = navController,
+        text = text,
+        onValueChange = { helloViewModel.onValueChange(it) })
+}
+
+@Composable
+fun MainScreen(
+    navController: NavController = rememberNavController(),
+    text: String = "",
+    onValueChange: (String) -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -70,7 +97,7 @@ fun MainScreen(navController: NavController) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = text,
-            onValueChange = { text = it },
+            onValueChange = onValueChange,
             label = {
                 Text("Name")
             })
